@@ -218,7 +218,7 @@
                             "fileUris": [
                                 "https://raw.githubusercontent.com/bgelens/PSConfEU2019S01/master/Setup.ps1"
                             ],
-                            "commandToExecute": "powershell -ExecutionPolicy Unrestricted -File Setup.ps1"
+                            "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File Setup.ps1 -UserName ', parameters('adminUserName'), ' -UserPassword ', parameters('adminPassword'))]"
                         }
                     }
                 }

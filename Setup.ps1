@@ -1,5 +1,9 @@
 param (
-    [switch] $CopyDemoOnly
+    [switch] $CopyDemoOnly,
+
+    [string] $UserName,
+
+    [string] $UserPassword
 )
 
 # disable servermanager
@@ -15,6 +19,8 @@ Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False
 if ($CopyDemoOnly) {
     return
 }
+
+$cred = [pscredential]::new($UserName, (ConvertTo-SecureString -AsPlainText -Force -String $UserPassword))
 
 $ProgressPreference = 'SilentlyContinue'
 
@@ -72,6 +78,9 @@ New-Item -Path c:\pullserver -ItemType Directory -Force
 New-Item -Path C:\pullserver -Name 'RegistrationKeys.txt' -Value 'cb30127b-4b66-4f83-b207-c4801fb05087' -ItemType File
 
 Import-Module WebAdministration
+
+# remove default website
+Get-Website -Name 'Default Web Site' | Remove-Website
 
 # install EDB Pull Server
 Invoke-DscResource -ModuleName xPSDesiredStateConfiguration -Name xDscWebService -Method Set -Property @{
@@ -145,8 +154,8 @@ $irmArgs = @{
 }
 Invoke-RestMethod @irmArgs -Uri $uri
 
-# stop website
-Get-Website -Name "SQLPullServer" | Stop-Website -ErrorAction SilentlyContinue
+# stop all websites
+Get-Website | Stop-Website -ErrorAction SilentlyContinue
 
 # install ubuntu
 Invoke-WebRequest -Uri https://aka.ms/wsl-ubuntu-1804 -OutFile Ubuntu.zip -UseBasicParsing
@@ -156,14 +165,16 @@ $machineenv = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
 New-Item -Path C:\Ubuntu -Name ubuntu.exe -ItemType SymbolicLink -Value C:\Ubuntu\ubuntu1804.exe
 
 # wsl needs to have been installed and system has to be rebooted for this to work
-c:\ubuntu\ubuntu.exe install --root
-c:\ubuntu\ubuntu.exe run wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb
-c:\ubuntu\ubuntu.exe run dpkg -i packages-microsoft-prod.deb
-c:\ubuntu\ubuntu.exe run apt-get update
-c:\ubuntu\ubuntu.exe run add-apt-repository universe
-c:\ubuntu\ubuntu.exe run apt-get install -y powershell
+Invoke-Command -Credential $cred -ComputerName . -ScriptBlock {
+    & c:\ubuntu\ubuntu.exe install --root
+    & c:\ubuntu\ubuntu.exe run wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb
+    & c:\ubuntu\ubuntu.exe run dpkg -i packages-microsoft-prod.deb
+    & c:\ubuntu\ubuntu.exe run apt-get update
+    & c:\ubuntu\ubuntu.exe run add-apt-repository universe
+    & c:\ubuntu\ubuntu.exe run apt-get install -y powershell
 
-c:\ubuntu\ubuntu.exe run pwsh -NoProfile -Command Install-Module DSCPullServerAdmin -Force
+    & c:\ubuntu\ubuntu.exe run pwsh -NoProfile -Command Install-Module DSCPullServerAdmin -Force
+}
 
 # install pwsh on windows using msi install
 Invoke-WebRequest -UseBasicParsing -Uri https://github.com/PowerShell/PowerShell/releases/download/v6.2.0/PowerShell-6.2.0-win-x64.msi -OutFile $env:TEMP\PowerShell-6.2.0-win-x64.msi
@@ -175,6 +186,7 @@ Start-Process -Wait -ArgumentList "/package $env:TEMP\PowerShell-6.2.0-win-x64.m
 # install vs code
 Invoke-WebRequest -UseBasicParsing -Uri https://go.microsoft.com/fwlink/?Linkid=852157 -OutFile $env:TEMP\vscodesetup.exe
 Start-Process -Wait -ArgumentList '/VERYSILENT /MERGETASKS=!runcode' -FilePath $env:TEMP\vscodesetup.exe
+
 
 # add appcmd to path
 $machineenv = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
