@@ -10,6 +10,7 @@ The entire demo environment can be deployed using the link below (it requires yo
 
 On wspull (`psconfeu-0<revisionNumber>-pull.westeurope.cloudapp.azure.com`):
 
+* Run `SetupWSL.ps1` (ubuntu is setup under the user context)
 * Open VS Code and install PowerShell extension (leave at ISE color as bright theme is requested by PSConf).
 * Switch to PSv6 for Integrated terminal
 * Reload VS Code and use workspace folder: `C:\Users\Public\Desktop\PSConfEU2019S01-master\`.
