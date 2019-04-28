@@ -16,6 +16,8 @@ if ($CopyDemoOnly) {
     return
 }
 
+$ProgressPreference = 'SilentlyContinue'
+
 # bootstrap powershellget
 Install-PackageProvider -Name powershellget -Force -ForceBootstrap
 
@@ -69,6 +71,8 @@ New-Item -Path c:\pullserver -ItemType Directory -Force
 # create registrationkey file
 New-Item -Path C:\pullserver -Name 'RegistrationKeys.txt' -Value 'cb30127b-4b66-4f83-b207-c4801fb05087' -ItemType File
 
+Import-Module WebAdministration
+
 # install EDB Pull Server
 Invoke-DscResource -ModuleName xPSDesiredStateConfiguration -Name xDscWebService -Method Set -Property @{
     Ensure                       = 'Present'
@@ -84,8 +88,11 @@ Invoke-DscResource -ModuleName xPSDesiredStateConfiguration -Name xDscWebService
     UseSecurityBestPractices     = $false
 }
 
-Get-Item -Path IIS:\AppPools\PSWS | Rename-Item -NewName EDB
+$edbAP = New-Item -Path IIS:\AppPools\EDB
+$edbAP.processModel.identityType = 'LocalSystem'
+$edbAP | Set-Item
 $null = Set-ItemProperty "IIS:\Sites\EDBPullServer" -Name ApplicationPool -Value EDB
+Remove-Item IIS:\AppPools\PSWS -Force -Recurse
 
 # create edb
 $uri = 'http://localhost:8080/PSDSCPullServer.svc'
@@ -118,8 +125,11 @@ Invoke-DscResource -ModuleName xPSDesiredStateConfiguration -Name xDscWebService
     SqlConnectionString          = 'Provider=SQLOLEDB.1;Server=localhost;User ID=sa;Password=Welkom01;Initial Catalog=master;'
 }
 
-Get-Item -Path IIS:\AppPools\PSWS | Rename-Item -NewName SQL
+$sqlAP = New-Item -Path IIS:\AppPools\SQL
+$sqlAP.processModel.identityType = 'LocalSystem'
+$sqlAP | Set-Item
 $null = Set-ItemProperty "IIS:\Sites\SQLPullServer" -Name ApplicationPool -Value SQL
+Remove-Item IIS:\AppPools\PSWS -Force -Recurse
 
 # set binding to 8080
 Set-WebBinding -Name SQLPullServer -BindingInformation "*:8081:" -PropertyName Port -Value 8080
@@ -146,5 +156,34 @@ $machineenv = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
 New-Item -Path C:\Ubuntu -Name ubuntu.exe -ItemType SymbolicLink -Value C:\Ubuntu\ubuntu1804.exe
 
 # wsl needs to have been installed and system has to be rebooted for this to work
-#c:\ubuntu\ubuntu.exe install --root
-# run install pwsh?
+c:\ubuntu\ubuntu.exe install --root
+c:\ubuntu\ubuntu.exe run wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb
+c:\ubuntu\ubuntu.exe run dpkg -i packages-microsoft-prod.deb
+c:\ubuntu\ubuntu.exe run apt-get update
+c:\ubuntu\ubuntu.exe run add-apt-repository universe
+c:\ubuntu\ubuntu.exe run apt-get install -y powershell
+
+c:\ubuntu\ubuntu.exe run pwsh -NoProfile -Command Install-Module DSCPullServerAdmin -Force
+
+# install pwsh on windows using msi install
+Invoke-WebRequest -UseBasicParsing -Uri https://github.com/PowerShell/PowerShell/releases/download/v6.2.0/PowerShell-6.2.0-win-x64.msi -OutFile $env:TEMP\PowerShell-6.2.0-win-x64.msi
+Start-Process -Wait -ArgumentList "/package $env:TEMP\PowerShell-6.2.0-win-x64.msi /quiet ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=1 ENABLE_PSREMOTING=1 REGISTER_MANIFEST=1" -FilePath msiexec.exe
+
+# install dscpullserveradmin on pwsh
+& 'C:\Program Files\PowerShell\6\pwsh.exe' -NoProfile -Command Install-module DSCPullServerAdmin -Scope AllUsers -Force
+
+# install vs code
+Invoke-WebRequest -UseBasicParsing -Uri https://go.microsoft.com/fwlink/?Linkid=852157 -OutFile $env:TEMP\vscodesetup.exe
+Start-Process -Wait -ArgumentList '/VERYSILENT /MERGETASKS=!runcode' -FilePath $env:TEMP\vscodesetup.exe
+
+# add appcmd to path
+$machineenv = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
+[System.Environment]::SetEnvironmentVariable("PATH", $machineenv + ";c:\Windows\System32\inetsrv", "Machine")
+
+# add shortcuts to desktop
+New-Item -Path c:\Users\Public\Desktop -Name pwsh.lnk -ItemType SymbolicLink -Value 'C:\Program Files\PowerShell\6\pwsh.exe'
+New-Item -Path c:\Users\Public\Desktop -Name vscode.lnk -ItemType SymbolicLink -Value 'C:\Program Files\Microsoft VS Code\Code.exe'
+New-Item -Path c:\Users\Public\Desktop -Name ubuntu.lnk -ItemType SymbolicLink -Value 'C:\Ubuntu\ubuntu.exe'
+
+# restart
+shutdown /r /t 30
