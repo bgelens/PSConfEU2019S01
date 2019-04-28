@@ -25,9 +25,6 @@ Install-Module -Name DSCPullServerAdmin -Scope AllUsers -Force
 # install xPSDSC
 Install-Module -Name xPSDesiredStateConfiguration -Scope AllUsers -Force
 
-# install dsc-service
-Install-WindowsFeature -Name Dsc-Service, Web-Mgmt-Console
-
 # download sql 2017 express setup file
 $sqlExpressUri = 'https://download.microsoft.com/download/5/E/9/5E9B18CC-8FD5-467E-B5BF-BADE39C51F73/SQLServer2017-SSEI-Expr.exe'
 Invoke-WebRequest -Uri $sqlExpressUri -UseBasicParsing -OutFile "$env:TEMP\SQLServer2017-SSEI-Expr.exe"
@@ -141,11 +138,13 @@ Invoke-RestMethod @irmArgs -Uri $uri
 # stop website
 Get-Website -Name "SQLPullServer" | Stop-Website -ErrorAction SilentlyContinue
 
-# install wsl
-Install-WindowsFeature -Name Microsoft-Windows-Subsystem-Linux
-
+# install ubuntu
 Invoke-WebRequest -Uri https://aka.ms/wsl-ubuntu-1804 -OutFile Ubuntu.zip -UseBasicParsing
 Expand-Archive ./Ubuntu.zip C:/Ubuntu
 $machineenv = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
 [System.Environment]::SetEnvironmentVariable("PATH", $machineenv + ";C:\Ubuntu", "Machine")
 New-Item -Path C:\Ubuntu -Name ubuntu.exe -ItemType SymbolicLink -Value C:\Ubuntu\ubuntu1804.exe
+
+# wsl needs to have been installed and system has to be rebooted for this to work
+#c:\ubuntu\ubuntu.exe install --root
+# run install pwsh?
