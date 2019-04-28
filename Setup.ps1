@@ -178,5 +178,9 @@ New-Item -Path c:\Users\Public\Desktop -Name pwsh.lnk -ItemType SymbolicLink -Va
 New-Item -Path c:\Users\Public\Desktop -Name vscode.lnk -ItemType SymbolicLink -Value 'C:\Program Files\Microsoft VS Code\Code.exe'
 New-Item -Path c:\Users\Public\Desktop -Name ubuntu.lnk -ItemType SymbolicLink -Value 'C:\Ubuntu\ubuntu.exe'
 
+# install  Access Database Engine 2016 x64
+Invoke-WebRequest -UseBasicParsing -Uri https://download.microsoft.com/download/3/5/C/35C84C36-661A-44E6-9324-8786B8DBE231/AccessDatabaseEngine_X64.exe -OutFile $env:TEMP\AccessDatabaseEngine_x64.exe
+Start-Process -Wait -ArgumentList '/quiet' -FilePath $env:TEMP\AccessDatabaseEngine_x64.exe
+
 # restart
 shutdown /r /t 30
