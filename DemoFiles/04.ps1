@@ -68,12 +68,12 @@ Get-Content -Path C:\just_another_file.txt
 Exit-PSSession
 
 <# sql connections also work on linux (F8 doesn't work)
-ubuntu.exe
-pwsh
-$PSVersionTable
-New-DSCPullServerAdminConnection -SQLServer localhost -Credential sa
-Get-DSCPullServerAdminRegistration
-Get-DSCPullServerAdminStatusReport
-exit
-exit
+    ubuntu.exe
+    pwsh
+    $PSVersionTable
+    New-DSCPullServerAdminConnection -SQLServer localhost -Credential sa
+    Get-DSCPullServerAdminRegistration
+    Get-DSCPullServerAdminStatusReport
+    exit
+    exit
 #>

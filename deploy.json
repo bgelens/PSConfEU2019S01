@@ -48,10 +48,36 @@
             }
         },
         {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2018-08-01",
+            "name": "DSCNSG",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "rdp",
+                        "properties": {
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "protocol": "*",
+                            "destinationAddressPrefix": "*",
+                            "destinationPortRange": 3389,
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*",
+                            "priority": 110
+                        }
+                    }
+                ]
+            }
+        },
+        {
             "apiVersion": "2015-06-15",
             "type": "Microsoft.Network/virtualNetworks",
             "name": "DSCPull-VirtualNetwork",
             "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', 'DSCNSG')]"
+            ],
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
@@ -62,7 +88,10 @@
                     {
                         "name": "DSCPull-VirtualNetwork-Subnet",
                         "properties": {
-                            "addressPrefix": "10.0.0.0/24"
+                            "addressPrefix": "10.0.0.0/24",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'DSCNSG')]"
+                            }
                         }
                     }
                 ]

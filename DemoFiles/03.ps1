@@ -72,11 +72,6 @@ appcmd stop apppool /apppool.name:EDB
 
 Get-DSCPullServerAdminStatusReport -OperationType Consistency -NodeName wslcm
 
-# see resourceschanged
-Get-DSCPullServerAdminStatusReport -OperationType Consistency -NodeName wslcm |
-    Select-Object -ExpandProperty StatusData |
-    Where-Object -FilterScript { $null -ne  $_.ResourcesChanged }
-
 <# see edb is not accessible from linux (F8 doesn't work)
     ubuntu.exe
     pwsh

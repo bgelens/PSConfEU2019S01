@@ -25,7 +25,7 @@ Install-PackageProvider -Name powershellget -Force -ForceBootstrap
 Install-Module -Name DSCPullServerAdmin -Scope AllUsers -Force
 
 # install xPSDSC
-Install-Module -Name xPSDesiredStateConfiguration -Scope AllUsers -Force
+Install-Module -Name xPSDesiredStateConfiguration -Scope AllUsers -RequiredVersion 8.6.0.0  -Force
 
 # download sql 2017 express setup file
 $sqlExpressUri = 'https://download.microsoft.com/download/5/E/9/5E9B18CC-8FD5-467E-B5BF-BADE39C51F73/SQLServer2017-SSEI-Expr.exe'

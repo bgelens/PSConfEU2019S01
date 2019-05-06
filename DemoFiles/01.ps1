@@ -6,9 +6,8 @@ appcmd start apppool /apppool.name:EDB
 appcmd start site /site.name:EDBPullServer
 
 # connect with LCM node
-$cred = Get-Credential -UserName dscadmin
-Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value '*' -Force
-$lcmSession = New-PSSession -ComputerName wslcm -Authentication Negotiate -Credential $cred
+Set-Item WSMan:\localhost\Client\TrustedHosts -Value * -Force
+$lcmSession = New-PSSession -ComputerName wslcm
 $lcmSession | Enter-PSSession
 
 # node is currently not onboarded

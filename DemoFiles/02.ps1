@@ -25,10 +25,10 @@ Get-DSCPullServerAdminStatusReport | Select-Object -First 1
 
 <# more options:
     Get LCM reports from 2 hours ago until now
-    Get-DSCPullServerAdminStatusReport -OperationType LocalConfigurationManager -FromStartTime ([datetime]::Now.AddHours(-2))
+    Get-DSCPullServerAdminStatusReport -OperationType LocalConfigurationManager -FromStartTime ([datetime]::Now.AddHours(-2)) -All
 
     remove everything that is older than 7 days
-    Get-DSCPullServerAdminStatusReport -OperationType All -ToStartTime ([datetime]::Now.AddDays(-7)) |
+    Get-DSCPullServerAdminStatusReport -OperationType All -ToStartTime ([datetime]::Now.AddDays(-7)) -All |
         Remove-DSCPullServerAdminStatusReport -Confirm:$false
 
     try to do this using the pull server rest api ;)
@@ -40,7 +40,7 @@ Get-DSCPullServerAdminRegistration -NodeName VM02 | Set-DSCPullServerAdminRegist
 
 Get-DSCPullServerAdminRegistration -NodeName VM02
 
-# we can create new data which is great to pre-register nodes (they don't need registration key if they are already known)
+# we can create new data
 New-DSCPullServerAdminRegistration -AgentId ([guid]::NewGuid()) -LCMVersion 2.0 -NodeName PSCONFEU01 -IPAddress 192.168.0.1 -ConfigurationNames PSCONFEU
 Get-DSCPullServerAdminRegistration -NodeName PSCONFEU01
 

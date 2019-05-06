@@ -3,5 +3,6 @@
     "files.defaultLanguage": "powershell",
     "powershell.integratedConsole.focusConsoleOnExecute": false,
     "powershell.sideBar.CommandExplorerVisibility": false,
-    "editor.minimap.enabled": false
+    "editor.minimap.enabled": false,
+    "powershell.powerShellExePath": "C:\\Program Files\\PowerShell\\6\\pwsh.exe"
 }
